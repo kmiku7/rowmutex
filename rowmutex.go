@@ -32,12 +32,14 @@ func (t *Table) Do(key string, fn func() error) error {
 	fnErr := fn()
 
 	t.mu.Lock()
-	r := t.m[key]
-	if r.waitCount <= 0 {
-		delete(t.m, key)
-	} else {
-		r.cond.Signal()
+	if r, has := t.m[key]; has {
+		if r.waitCount <= 0 {
+			delete(t.m, key)
+		} else {
+			r.cond.Signal()
+		}
 	}
+
 	t.mu.Unlock()
 	return fnErr
 }
