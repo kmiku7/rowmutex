@@ -5,6 +5,7 @@ import (
 	"sync"
 	"testing"
 	"time"
+	"fmt"
 )
 
 func Test_Do(t *testing.T) {
@@ -27,11 +28,27 @@ func Test_Concurrency(t *testing.T) {
 	counterB := 10000
 	var table Table
 	var wg sync.WaitGroup
-	wg.Add(200)
+	wg.Add(203)
 
 	rowKey := "test-key-a"
 	rowKey2 := "test-key-b"
 	concurrencyCount := 100
+
+	cycle_dep := make(chan interface{})
+	finish_dep := make(chan interface{})
+
+	go func() {
+		_ = <- cycle_dep
+		fmt.Println("all done")
+		finish_dep <- nil
+	}()
+
+	go func() {
+		c := time.Tick(time.Second * 2)
+		for now := range c {
+			fmt.Printf("tick %v %s\n", now, time.Now().String())
+		}
+	}()
 
 	for i := 0; i < concurrencyCount; i++ {
 		idx := i
@@ -52,6 +69,9 @@ func Test_Concurrency(t *testing.T) {
 	}
 
 	wg.Wait()
+
+	cycle_dep <- nil
+	_ = <- finish_dep
 
 	if len(table.m) != 0 {
 		t.Errorf("invalid map len, expected:0, actual:%d", len(table.m))
