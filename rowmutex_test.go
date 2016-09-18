@@ -10,7 +10,7 @@ import (
 func Test_Do(t *testing.T) {
 	expectedErr := errors.New("error info for test.")
 
-	var table Table
+	table := NewTable()
 	err := table.Do("test-key", func() error {
 		t.Log("function called.")
 		return expectedErr
@@ -25,7 +25,7 @@ func Test_Concurrency(t *testing.T) {
 
 	counterA := 0
 	counterB := 10000
-	var table Table
+	table := NewTable()
 	var wg sync.WaitGroup
 	wg.Add(200)
 

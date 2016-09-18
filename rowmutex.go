@@ -12,6 +12,10 @@ type Table struct {
 	m  map[string]*row
 }
 
+func NewTable() *Table {
+	return &Table{}
+}
+
 func (t *Table) Do(key string, fn func() error) error {
 	t.mu.Lock()
 	if t.m == nil {
